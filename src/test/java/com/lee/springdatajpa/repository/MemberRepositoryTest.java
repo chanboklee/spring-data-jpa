@@ -259,4 +259,31 @@ class MemberRepositoryTest {
             System.out.println("member.team="+member.getTeam().getName());
         }
     }
+
+    @Test
+    public void queryHint(){
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findById(member1.getId()).get();
+        findMember.changeUsername("member2");
+
+        // SQL Hint가 아닌 JPA Hint
+        // 조회성으로만 사용한다.. 변경감지(더티체킹)을 하지 않는다..
+        // 성능테스트 후 정말 중요한 것에만 넣는다..
+        Member findMemberReadOnly = memberRepository.findReadOnlyByUsername("member1");
+        findMemberReadOnly.changeUsername("member2");
+
+        em.flush();
+    }
+
+    @Test
+    public void lock(){
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        List<Member> result = memberRepository.findLockByUsername("member1");
+    }
 }
